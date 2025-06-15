@@ -1,6 +1,6 @@
 # Pipely™️ - single-purpose, single-tenant CDN
 
-Based on [Varnish Cache](https://varnish-cache.org/releases/index.html) (OSS FTW 💚). This started as the simplest CDN running on [fly.io](https://fly.io/changelog).
+Based on [Varnish Cache](https://varnish-cache.org/releases/index.html) (OSS FTW 💚). This started as the simplest CDN running on [fly.io](https://fly.io/changelog)
 for [changelog.com](https://changelog.com)
 
 You are welcome to fork and build this your own.
@@ -23,10 +23,17 @@ You are welcome to fork and build this your own.
 - ✅ Send Varnish logs to Honeycomb.io - [PR #12](https://github.com/thechangelog/pipely/pull/12)
 - ✅ Enrich Varnish logs with GeoIP data - [PR #13](https://github.com/thechangelog/pipely/pull/13)
 - ✅ Supervisor restarts crashed processes - [PR #14](https://github.com/thechangelog/pipely/pull/14)
-- ☑️ Require auth for `PURGE` requests
+- ✅ Auth `PURGE` requests
 - ☑️ Send logs to S3
 - ☑️ Add redirects from [Fastly VCL](./varnish/changelog.com.vcl)
 - ☑️ All contributors review & clean-up
+  - `just bench-feed-*`
+  - Is the VCL as clean & efficient as it could be?
+  - Does everything work as expected?
+  - Anything that can be removed?
+  - How do we make this friendlier to new users?
+  - How do we make this friendlier to contributions?
+  - How easy is this to use as your own deployment?
 - ☑️ Tag & ship `v1.0-rc.1`
 - ☑️ Route 10% of production traffic through `v1.0-rc.1`
 - ☑️ Tag & ship `v1.0-rc.2` (component updates, etc.)
@@ -54,11 +61,9 @@ Available recipes:
     how-many-lines                  # How many lines of Varnish config?
     how-many-lines-raw              # How many lines of Varnish config?
     http-profile url="https://pipedream.changelog.com/" # Observe all HTTP timings - https://blog.cloudflare.com/a-question-of-timing
-    shell                           # Open an interactive shell for high-level commands, e.g. `test`, `debug | terminal`, etc.
     test                            # Test everything
-    test-acceptance-fastly *ARGS    # Test remote CDN
-    test-acceptance-local           # Test local CDN
-    test-acceptance-pipedream *ARGS # Test remote NEW CDN (a.k.a. Pipely, a.k.a. Pipedream)
+    test-acceptance-fastly *ARGS    # Test CURRENT production
+    test-acceptance-local           # Test local setup
     test-reports                    # Open test reports
     test-reports-rm                 # Clear test reports
     test-vtc                        # Test VCL config
@@ -77,6 +82,7 @@ Available recipes:
     secrets                         # Set app secrets - assumes envrc-secrets was already run
     status                          # Show app status
     tag tag sha discussion          # Tag a new release
+    test-acceptance-pipedream *ARGS # Test NEW production - Pipedream, the Changelog variant of Pipely
 
 # Run the tests
 just test

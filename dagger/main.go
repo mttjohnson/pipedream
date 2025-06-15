@@ -75,6 +75,9 @@ func New(
 	// +default="24h"
 	berespGrace string,
 
+	// +optional
+	purgeToken string,
+
 	// +default="5000:changelog-2025-05-05.fly.dev:"
 	appProxy string,
 
@@ -107,6 +110,7 @@ func New(
 		WithExposedPort(varnishPort).
 		WithEnvVariable("BERESP_TTL", berespTtl).
 		WithEnvVariable("BERESP_GRACE", berespGrace).
+		WithEnvVariable("PURGE_TOKEN", purgeToken).
 		WithEnvVariable("HONEYCOMB_DATASET", honeycombDataset)
 
 	if honeycombApiKey != nil {
@@ -322,9 +326,14 @@ func (m *Pipely) TestAcceptance(ctx context.Context) *dagger.Container {
 		panic(err)
 	}
 
+	purgeToken, err := m.Test(ctx).EnvVariable(ctx, "PURGE_TOKEN")
+	if err != nil {
+		panic(err)
+	}
+
 	return m.Test(ctx).
 		WithServiceBinding("pipely", pipely).
-		WithExec([]string{"just", "test-acceptance-local", "--variable", "host=http://pipely:9000"})
+		WithExec([]string{"just", "test-acceptance-local", "--variable", "host=http://pipely:9000", "--variable", "purge_token=" + purgeToken})
 }
 
 // Test acceptance report

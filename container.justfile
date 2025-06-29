@@ -17,7 +17,7 @@ up:
 
 # Check $url
 check url="http://localhost:9000":
-    httpstat {{ url }}
+    httpstat '{{ url }}'
 
 # List Varnish backends
 backends:

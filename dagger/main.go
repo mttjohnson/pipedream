@@ -211,10 +211,56 @@ func (m *Pipely) withConfigs(c *dagger.Container, env Env) *dagger.Container {
 }
 
 func (m *Pipely) withVarnishConfig(c *dagger.Container) *dagger.Container {
+
+	ctx := context.Background()
+	client, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stderr))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	// Access host directory
+	hostDir := client.Host().Directory(".")
+
+	// Read both input files using Dagger
+	redirectsFile := hostDir.File("varnish/redirects.txt")
+	templateFile := hostDir.File("varnish/template.vcl.tmpl")
+
+	redirectsContent, err := redirectFile.Contents(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	templateContent, err := redirectFile.Contents(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	// Generate VCL in memory
+	outputContent, err := GenerateRedirectVCL(redirectsContent, templateContent)
+	if err != nil {
+		panic(err)
+	}
+
+	// Write back to a Dagger directory (to be used as output artifact)
+	vclOutputDir := client.Directory().WithNewFile("varnish/generated-redirects.vcl", outputContent)
+
+	// Optionally export the file locally
+	_, err = vclOutputDir.Export(ctx, ".")
+	if err != nil {
+		panic(err)
+	}
+
 	return c.
 		WithFile(
 			"/etc/varnish/default.vcl",
-			m.Source.File("varnish/pipedream.changelog.com.vcl"))
+			m.Source.File("varnish/pipedream.changelog.com.vcl")).
+		WithFile(
+			"/etc/varnish/pipedream-redirects.changelog.com.vcl",
+			m.Source.File("varnish/pipedream-redirects.changelog.com.vcl")).
+		WithFile(
+			"/etc/varnish/generated-redirects.vcl",
+			m.Source.File("varnish/generated-redirects.vcl"))
 }
 
 func (m *Pipely) withVarnishJsonResponse(c *dagger.Container) *dagger.Container {
